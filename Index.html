@@ -1,0 +1,378 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Familiequiz</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: én smal kolonne som en mobilapp. Oransje statuskort, grønt kort for blandet quiz, ferskenfargede kort for hver quiz. */
+:root {
+  --bg: #FBF3E8;
+  --surface: #F7E4CC;
+  --surface-hi: #FFF9F1;
+  --ink: #5B2A10;
+  --muted: #8A5A3F;
+  --orange: #C2651F;
+  --green: #2F8458;
+  --red: #B8402F;
+  --plum: #7A3B5E;
+  --on-color: #FFFFFF;
+  --line: #E9CFB2;
+  --font: "Fira Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1F1510; --surface: #2E2018; --surface-hi: #3A281E; --ink: #F8E8D4; --muted: #CDB097;
+    --orange: #C2651F; --green: #2F8458; --red: #B8402F; --plum: #8E4C70; --line: #4A3326;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1F1510; --surface: #2E2018; --surface-hi: #3A281E; --ink: #F8E8D4; --muted: #CDB097;
+  --orange: #C2651F; --green: #2F8458; --red: #B8402F; --plum: #8E4C70; --line: #4A3326;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.45;
+  padding-block: 24px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.app { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
+h1, h2, h3, p { margin: 0; }
+button { font: inherit; color: inherit; cursor: pointer; border: 0; background: none; }
+button:focus-visible { outline: 3px solid var(--orange); outline-offset: 3px; }
+
+/* Topp */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.top h1 { font-size: 34px; font-weight: 800; line-height: 1.1; letter-spacing: -0.01em; text-wrap: balance; }
+.top p { color: var(--muted); font-size: 17px; margin-top: 4px; }
+.badge {
+  flex: none; width: 76px; height: 76px; border-radius: 50%;
+  background: var(--orange); display: grid; place-items: center;
+}
+
+/* Statuskort */
+.stats {
+  background: var(--orange); color: var(--on-color); border-radius: 22px;
+  display: grid; grid-template-columns: 1fr 1px 1fr; align-items: center; padding: 18px 20px; gap: 12px;
+}
+.stats .div { height: 52px; background: rgba(255,255,255,.35); }
+.stat { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.stat svg { flex: none; }
+.stat b { display: block; font-size: 30px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 14px; font-weight: 500; opacity: .92; }
+
+.section-label { font-size: 15px; font-weight: 700; letter-spacing: .02em; color: var(--ink); margin-bottom: -8px; }
+
+/* Blandet quiz */
+.mix {
+  width: 100%; text-align: left; background: var(--green); color: var(--on-color);
+  border-radius: 22px; padding: 22px 20px; display: flex; align-items: center; gap: 16px;
+  transition: transform .15s ease;
+}
+.mix:hover { transform: translateY(-2px); }
+.mix .ring { flex: none; }
+.mix .txt { flex: 1; min-width: 0; }
+.mix h3 { font-size: 24px; font-weight: 800; line-height: 1.15; }
+.mix p { font-size: 17px; opacity: .95; }
+.mix .chev { flex: none; }
+
+/* Quizliste */
+.list { display: flex; flex-direction: column; gap: 12px; }
+.item {
+  width: 100%; text-align: left; background: var(--surface); border-radius: 20px;
+  padding: 16px; display: flex; align-items: center; gap: 16px; transition: transform .15s ease;
+}
+.item:hover { transform: translateY(-2px); }
+.tile {
+  flex: none; width: 68px; height: 68px; border-radius: 14px; background: var(--surface-hi);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1;
+}
+.tile b { font-size: 34px; font-weight: 800; }
+.tile small { font-size: 12px; font-weight: 600; margin-top: 4px; color: var(--muted); }
+.c-orange b { color: var(--orange); } .c-green b { color: var(--green); } .c-red b { color: var(--red); } .c-plum b { color: var(--plum); }
+.item .body { flex: 1; min-width: 0; }
+.item h3 { font-size: 22px; font-weight: 800; line-height: 1.2; }
+.item p { color: var(--muted); font-size: 15px; margin-top: 2px; }
+.item .best { font-variant-numeric: tabular-nums; font-weight: 600; }
+
+/* Quizvisning */
+.bar { display: flex; align-items: center; gap: 12px; }
+.back {
+  flex: none; width: 44px; height: 44px; border-radius: 50%; background: var(--surface);
+  display: grid; place-items: center;
+}
+.progress { flex: 1; height: 10px; border-radius: 99px; background: var(--surface); overflow: hidden; }
+.progress i { display: block; height: 100%; background: var(--orange); border-radius: 99px; transition: width .3s ease; }
+.count { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; min-width: 3.2em; text-align: right; }
+
+.qcard { background: var(--surface); border-radius: 22px; padding: 22px 20px; display: flex; flex-direction: column; gap: 6px; }
+.qcard .kicker { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.qcard h2 { font-size: 24px; font-weight: 800; line-height: 1.25; text-wrap: balance; }
+
+.opts { display: flex; flex-direction: column; gap: 10px; }
+.opt {
+  width: 100%; text-align: left; display: flex; align-items: center; gap: 14px;
+  background: var(--surface-hi); border: 2px solid var(--line); border-radius: 16px;
+  padding: 14px 16px; font-size: 18px; font-weight: 500; min-height: 60px;
+  transition: transform .12s ease, background .15s ease, border-color .15s ease;
+}
+.opt:hover:not(:disabled) { transform: translateY(-1px); border-color: var(--orange); }
+.opt .letter {
+  flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--surface); font-weight: 800; color: var(--orange);
+}
+.opt .label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.opt .mark { flex: none; font-weight: 800; font-size: 14px; }
+.opt:disabled { cursor: default; }
+.opt.correct { background: var(--green); border-color: var(--green); color: var(--on-color); }
+.opt.wrong { background: var(--red); border-color: var(--red); color: var(--on-color); }
+.opt.correct .letter, .opt.wrong .letter { background: rgba(255,255,255,.25); color: var(--on-color); }
+.opt.dim { opacity: .55; }
+
+.feedback { border-radius: 16px; padding: 14px 16px; background: var(--surface); font-size: 16px; }
+.feedback b { display: block; font-size: 18px; margin-bottom: 2px; }
+.feedback.good b { color: var(--green); }
+.feedback.bad b { color: var(--red); }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .feedback.good b { color: #6FD3A0; }
+  :root:not([data-theme="light"]) .feedback.bad b { color: #FF9C8B; }
+}
+:root[data-theme="dark"] .feedback.good b { color: #6FD3A0; }
+:root[data-theme="dark"] .feedback.bad b { color: #FF9C8B; }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  flex: 1 1 140px; min-height: 52px; border-radius: 16px; font-weight: 700; font-size: 17px; padding: 12px 18px;
+  background: var(--orange); color: var(--on-color);
+}
+.btn.ghost { background: var(--surface); color: var(--ink); }
+.btn:hover { filter: brightness(1.06); }
+
+/* Resultat */
+.result { background: var(--green); color: var(--on-color); border-radius: 22px; padding: 28px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.result .big { font-size: 64px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.result h2 { font-size: 26px; font-weight: 800; text-wrap: balance; }
+.result p { font-size: 17px; opacity: .95; }
+
+[hidden] { display: none !important; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 380px) { .top h1 { font-size: 28px; } .badge { width: 60px; height: 60px; } .qcard h2 { font-size: 21px; } }
+</style>
+
+<div class="app" id="app"></div>
+
+<script>
+/* ------------------------------------------------------------------
+   LEGG TIL FLERE QUIZER HER
+   Kopier en blokk og endre id, tittel og spørsmål.
+   a = nummeret på riktig svar i o-listen (0 = A, 1 = B, 2 = C).
+------------------------------------------------------------------- */
+const QUIZZES = [
+  {
+    id: 'paske', title: 'Påskequiz', sub: 'For alle fra 15 år', letter: 'P', color: 'orange',
+    questions: [
+      { q: 'Hva heter dagen før langfredag, som minner om Jesu siste måltid med disiplene?', o: ['Påskeaften', 'Skjærtorsdag', 'Askeonsdag'], a: 1, note: 'Skjærtorsdag er torsdagen før påske.' },
+      { q: 'Hvem ble sluppet fri i stedet for Jesus, ifølge påskeberetningen i Bibelen?', o: ['Barabbas', 'Judas', 'Lasarus'], a: 0, note: 'Pilatus lot folket velge, og de valgte Barabbas.' },
+      { q: 'Hva kalles den norske tradisjonen med å lese bøker og se serier om mord og mysterier i påsken?', o: ['Påskeskrekk', 'Påskekrim', 'Påskemysterium'], a: 1, note: 'Påskekrim har vært tradisjon siden 1920-tallet.' },
+      { q: 'Hvilken sjokolade er mest knyttet til påsketuren på fjellet?', o: ['Smash', 'Troika', 'Kvikk Lunsj'], a: 2, note: 'Kvikk Lunsj ble lansert i 1937 og er en del av hyttesekken.' },
+      { q: 'Hvordan beregnes datoen for påskedag?', o: ['Første søndag etter første fullmåne på eller etter vårjevndøgn', 'Første søndag i april', 'Alltid 27. mars'], a: 0, note: 'Derfor kan påskedag falle fra 22. mars til 25. april.' },
+      { q: 'I hvilket land kler barn seg ut som påskeheks og går fra dør til dør?', o: ['Sverige', 'Italia', 'Irland'], a: 0, note: 'Sverige, og også Finland.' },
+      { q: 'Hvilken høytid feires på en torsdag 39 dager etter påskedag, til minne om at Jesus for opp til himmelen?', o: ['Pinse', 'Trefoldighetssøndag', 'Kristi himmelfartsdag'], a: 2, note: 'Kristi himmelfartsdag er alltid en torsdag.' },
+      { q: 'Hva kalles perioden før påske, som tradisjonelt er en tid for faste og forberedelse?', o: ['Adventstiden', 'Fastetiden', 'Pinsetiden'], a: 1, note: 'Fastetiden varer i 40 dager, søndagene ikke medregnet.' },
+      { q: 'Hvor mange offentlige fridager er det i selve påsken i Norge (skjærtorsdag, langfredag, 1. og 2. påskedag)?', o: ['3', '5', '4'], a: 2, note: 'Fire dager. Påskedag er alltid en søndag, men regnes likevel som helligdag.' },
+      { q: 'Hva kalles søndagen før påske, til minne om Jesu inntog i Jerusalem?', o: ['Pinsedag', 'Allehelgensdag', 'Palmesøndag'], a: 2, note: 'Palmesøndag innleder den stille uke.' }
+    ]
+  },
+  {
+    id: 'norge', title: 'Norgesquiz', sub: 'Geografi og historie', letter: 'N', color: 'green',
+    questions: [
+      { q: 'Hva er Norges lengste elv?', o: ['Numedalslågen', 'Glomma', 'Tana'], a: 1, note: 'Glomma er omtrent 621 km lang.' },
+      { q: 'Hva er Norges høyeste fjell?', o: ['Glittertind', 'Snøhetta', 'Galdhøpiggen'], a: 2, note: 'Galdhøpiggen er 2469 meter over havet.' },
+      { q: 'Hvilket år ble unionen med Sverige oppløst?', o: ['1814', '1905', '1945'], a: 1, note: 'Unionsoppløsningen skjedde i 1905.' },
+      { q: 'Hva er Norges største innsjø?', o: ['Mjøsa', 'Femunden', 'Røssvatnet'], a: 0, note: 'Mjøsa er omtrent 365 km² stor.' },
+      { q: 'Hvilken by kalles ofte «oljehovedstaden»?', o: ['Bergen', 'Stavanger', 'Trondheim'], a: 1, note: 'Stavanger er sentrum for norsk oljeindustri.' }
+    ]
+  },
+  {
+    id: 'jul', title: 'Julequiz', sub: 'Tradisjoner og mat', letter: 'J', color: 'red',
+    questions: [
+      { q: 'Hvilken tradisjonell julemat lages av tørrfisk som er bløtlagt i lut?', o: ['Rakfisk', 'Lutefisk', 'Gravlaks'], a: 1, note: 'Lutefisk serveres ofte med bacon, erter og potet.' },
+      { q: 'Hvilket land stammer juletreet-tradisjonen fra?', o: ['Norge', 'USA', 'Tyskland'], a: 2, note: 'Tradisjonen kom til Norge på 1800-tallet.' },
+      { q: 'Hvilken dato feires Lucia?', o: ['13. desember', '6. desember', '24. desember'], a: 0, note: 'Luciadagen er 13. desember.' },
+      { q: 'Hva kalles de fire ukene før jul?', o: ['Fastetiden', 'Adventstiden', 'Allehelgenstiden'], a: 1, note: 'Advent begynner fire søndager før jul.' },
+      { q: 'Hva setter tradisjonelt nissen fram til fjøsnissen på julaften?', o: ['Pinnekjøtt', 'Lutefisk', 'Risengrøt'], a: 2, note: 'Risengrøt med en klatt smør.' }
+    ]
+  }
+];
+const MIX_COUNT = 10;
+const COLORS = ['orange', 'green', 'red', 'plum'];
+
+/* ---------- lagring ---------- */
+const KEY = 'familiequiz-v1';
+let store = { best: {} };
+try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s && s.best) store = s; } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} }
+
+/* ---------- tilstand ---------- */
+const app = document.getElementById('app');
+let st = { view: 'home' };
+
+const shuffle = a => { const r = a.slice(); for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; } return r; };
+const L = ['A', 'B', 'C', 'D'];
+
+const ICON = {
+  chev: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>',
+  back: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>',
+  bubble: '<svg width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true"><path d="M8 9h24a3 3 0 013 3v13a3 3 0 01-3 3H20l-7 6v-6H8a3 3 0 01-3-3V12a3 3 0 013-3z" fill="#FBF3E8"/><text x="20" y="25" text-anchor="middle" font-family="Fira Sans, sans-serif" font-weight="800" font-size="16" fill="#C2651F">?</text></svg>',
+  star: '<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><path d="M26 2l4.6 3.6 5.8-.4 2.2 5.4 5.4 2.2-.4 5.8L47.2 24l-3.6 4.6.4 5.8-5.4 2.2-2.2 5.4-5.8-.4L26 45.2l-4.6-3.6-5.8.4-2.2-5.4-5.4-2.2.4-5.8L4.8 24l3.6-4.6-.4-5.8 5.4-2.2 2.2-5.4 5.8.4z" fill="#F6D9B8"/><path d="M26 14l3.3 7 7.7.9-5.7 5.2 1.6 7.6L26 31l-6.9 3.7 1.6-7.6L15 22l7.7-.9z" fill="#B8402F"/></svg>',
+  trophy: '<svg width="52" height="52" viewBox="0 0 52 52" aria-hidden="true"><path d="M14 6h24v14a12 12 0 01-24 0z" fill="#F6D9B8"/><path d="M14 10H6v4a8 8 0 008 8M38 10h8v4a8 8 0 01-8 8" fill="none" stroke="#F6D9B8" stroke-width="3"/><rect x="22" y="31" width="8" height="8" fill="#F6D9B8"/><rect x="15" y="39" width="22" height="6" rx="2" fill="#B8402F"/><path d="M26 11l2 4.2 4.6.6-3.4 3.1 1 4.5-4.2-2.3-4.2 2.3 1-4.5-3.4-3.1 4.6-.6z" fill="#B8402F"/></svg>'
+};
+
+/* ---------- visninger ---------- */
+function totals() {
+  const vals = Object.values(store.best);
+  return { points: vals.reduce((s, n) => s + n, 0), done: vals.length };
+}
+
+function home() {
+  const t = totals();
+  const items = QUIZZES.map((z, i) => {
+    const b = store.best[z.id];
+    return `<button class="item" data-quiz="${z.id}">
+      <span class="tile c-${z.color}"><b>${z.letter}</b><small>Quiz</small></span>
+      <span class="body"><h3>${z.title}</h3>
+      <p>${z.questions.length} spørsmål · ${z.sub}</p>
+      <p class="best">${b == null ? 'Ikke spilt ennå' : 'Beste: ' + b + ' av ' + z.questions.length}</p></span>
+      ${ICON.chev}</button>`;
+  }).join('');
+  return `
+  <header class="top">
+    <div><h1>Hei, familien!</h1><p>Klar for en ny runde?</p></div>
+    <div class="badge">${ICON.bubble}</div>
+  </header>
+  <section class="stats" aria-label="Status">
+    <div class="stat">${ICON.star}<div><b>${t.points}</b><span>Poeng</span></div></div>
+    <div class="div"></div>
+    <div class="stat">${ICON.trophy}<div><b>${t.done}/${QUIZZES.length}</b><span>Quizer spilt</span></div></div>
+  </section>
+  <p class="section-label">Spill mer</p>
+  <button class="mix" data-mix>
+    <svg class="ring" width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="6"/>
+      <circle cx="32" cy="32" r="26" fill="none" stroke="#F6D9B8" stroke-width="6" stroke-linecap="round" stroke-dasharray="120 164" transform="rotate(-90 32 32)"/>
+      <text x="32" y="38" text-anchor="middle" font-family="Fira Sans, sans-serif" font-weight="800" font-size="18" fill="#fff">${MIX_COUNT}</text>
+    </svg>
+    <span class="txt"><h3>Blandet quiz</h3><p>${MIX_COUNT} tilfeldige spørsmål fra alle quizer</p></span>
+    ${ICON.chev}
+  </button>
+  <p class="section-label">Velg quiz</p>
+  <div class="list">${items}</div>`;
+}
+
+function quizView() {
+  const { qs, i, picked, title } = st;
+  const q = qs[i];
+  const done = picked !== null;
+  const opts = q.o.map((txt, k) => {
+    let cls = 'opt', mark = '';
+    if (done) {
+      if (k === q.a) { cls += ' correct'; mark = 'Riktig'; }
+      else if (k === picked) { cls += ' wrong'; mark = 'Feil'; }
+      else cls += ' dim';
+    }
+    return `<button class="${cls}" data-opt="${k}" ${done ? 'disabled' : ''}>
+      <span class="letter">${L[k]}</span><span class="label">${txt}</span><span class="mark">${mark}</span></button>`;
+  }).join('');
+
+  let fb = '';
+  if (done) {
+    if (picked === 'shown') fb = `<div class="feedback" role="status"><b>Riktig svar: ${L[q.a]}) ${q.o[q.a]}</b>${q.note || ''}</div>`;
+    else if (picked === q.a) fb = `<div class="feedback good" role="status"><b>Riktig!</b>${q.note || ''}</div>`;
+    else fb = `<div class="feedback bad" role="status"><b>Ikke helt. Riktig svar er ${L[q.a]}) ${q.o[q.a]}</b>${q.note || ''}</div>`;
+  }
+  const last = i === qs.length - 1;
+  const actions = done
+    ? `<button class="btn" data-next>${last ? 'Se resultat' : 'Neste spørsmål'}</button>`
+    : `<button class="btn ghost" data-show>Vis svar</button>`;
+
+  return `
+  <div class="bar">
+    <button class="back" data-home aria-label="Tilbake til oversikten">${ICON.back}</button>
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="${qs.length}" aria-valuenow="${i + (done ? 1 : 0)}"><i style="width:${((i + (done ? 1 : 0)) / qs.length) * 100}%"></i></div>
+    <span class="count">${i + 1}/${qs.length}</span>
+  </div>
+  <section class="qcard"><span class="kicker">${q.from || title}</span><h2>${q.q}</h2></section>
+  <div class="opts">${opts}</div>
+  ${fb}
+  <div class="actions">${actions}</div>`;
+}
+
+function resultView() {
+  const n = st.qs.length, s = st.score, r = s / n;
+  const head = r === 1 ? 'Full pott!' : r >= 0.7 ? 'Veldig bra jobbet' : r >= 0.4 ? 'Helt grei runde' : 'Bedre lykke neste gang';
+  const best = st.id in store.best ? store.best[st.id] : s;
+  return `
+  <div class="bar">
+    <button class="back" data-home aria-label="Tilbake til oversikten">${ICON.back}</button>
+    <div class="progress"><i style="width:100%"></i></div>
+    <span class="count">${n}/${n}</span>
+  </div>
+  <section class="result">
+    <div class="big">${s}/${n}</div>
+    <h2>${head}</h2>
+    <p>${st.title}${st.id === 'mix' ? '' : ' · Beste resultat: ' + best + ' av ' + n}</p>
+  </section>
+  <div class="actions">
+    <button class="btn" data-again>Spill igjen</button>
+    <button class="btn ghost" data-home>Til oversikten</button>
+  </div>`;
+}
+
+function render(focusSel) {
+  app.innerHTML = st.view === 'home' ? home() : st.view === 'quiz' ? quizView() : resultView();
+  if (focusSel) { const el = app.querySelector(focusSel); if (el) el.focus({ preventScroll: true }); }
+}
+
+/* ---------- start og hendelser ---------- */
+function start(id) {
+  if (id === 'mix') {
+    const all = QUIZZES.flatMap(z => z.questions.map(q => Object.assign({ from: z.title }, q)));
+    st = { view: 'quiz', id: 'mix', title: 'Blandet quiz', qs: shuffle(all).slice(0, MIX_COUNT), i: 0, score: 0, picked: null };
+  } else {
+    const z = QUIZZES.find(x => x.id === id);
+    st = { view: 'quiz', id: z.id, title: z.title, qs: z.questions, i: 0, score: 0, picked: null };
+  }
+  render(); window.scrollTo(0, 0);
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (b.dataset.quiz) return start(b.dataset.quiz);
+  if (b.hasAttribute('data-mix')) return start('mix');
+  if (b.hasAttribute('data-home')) { st = { view: 'home' }; render(); return window.scrollTo(0, 0); }
+  if (b.hasAttribute('data-again')) return start(st.id);
+  if (b.dataset.opt !== undefined && st.picked === null) {
+    const k = +b.dataset.opt;
+    st.picked = k;
+    if (k === st.qs[st.i].a) st.score++;
+    return render('[data-next]');
+  }
+  if (b.hasAttribute('data-show') && st.picked === null) { st.picked = 'shown'; return render('[data-next]'); }
+  if (b.hasAttribute('data-next')) {
+    if (st.i < st.qs.length - 1) { st.i++; st.picked = null; render(); return window.scrollTo(0, 0); }
+    if (st.id !== 'mix') { store.best[st.id] = Math.max(store.best[st.id] || 0, st.score); save(); }
+    st.view = 'result'; render(); window.scrollTo(0, 0);
+  }
+});
+
+render();
+</script>
+
+</body></html>
